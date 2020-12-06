@@ -157,6 +157,24 @@ const set_active = async (id, active) => {
   ) 
 } 
 
+app.get("/filtered_m3u8", async (request, response) => {
+  const m3u8_content = ["#EXTM3U"]
+  const channels = await db.Channel.findAll({
+    where: {active: {[Op.eq]: true}}
+  })
+  
+  for (let i in channels) {
+    let channel = channels[i]
+    m3u8_content.push(`EXTINF:-1 tvg-id="" tvg-name="" tvg-url="" group-title="",${channel.name}`)
+    m3u8_content.push(channel.url)
+  }
+    
+  response.type("text")
+  response.setHeader("content-type", "audio/x-mpegurl")
+  response.setHeader('Content-disposition', 'attachment; filename=list.m3u8');
+  response.send(m3u8_content.join("\n"))
+})
+
 // listen for requests :)
 const listener = app.listen(process.env.PORT, () => {
   console.log("Your app is listening on port " + listener.address().port);
